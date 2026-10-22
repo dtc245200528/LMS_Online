@@ -120,3 +120,6 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--brand); out
   .nav { gap: 10px; font-size: .9rem; }
   .brand-sub { display: none; }
 }
+
+.danger-text { color: var(--danger); font-weight: 700; }
+.ok-text { color: var(--brand); font-weight: 700; }

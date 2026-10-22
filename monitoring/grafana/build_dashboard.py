@@ -25,10 +25,10 @@ def row(title):
     y += 1
 
 
-def stat(title, expr, x, w=4, unit="none", mapping_updown=False):
+def stat(title, expr, x, w=4, unit="none", mapping_updown=False, h=4):
     p = {
         "type": "stat", "title": title, "id": nid(), "datasource": DS,
-        "gridPos": {"h": 4, "w": w, "x": x, "y": y},
+        "gridPos": {"h": h, "w": w, "x": x, "y": y},
         "targets": [{"refId": "A", "expr": expr, "datasource": DS, "instant": True}],
         "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"},
         "fieldConfig": {"defaults": {"unit": unit, "color": {"mode": "thresholds"},
@@ -62,6 +62,14 @@ stat("Học viên", "lms_students", 12)
 stat("Khóa học", "lms_courses", 16)
 stat("Lượt đăng ký học", "lms_active_enrollments", 20)
 y += 4
+
+# ---------------- Cảnh báo & an ninh ----------------
+row("Cảnh báo & an ninh")
+stat("Cảnh báo đang kích hoạt", 'count(ALERTS{alertstate="firing"}) or vector(0)', 0, w=6, h=8)
+panels[-1]["fieldConfig"]["defaults"]["thresholds"]["steps"] = [{"color": "green", "value": None}, {"color": "red", "value": 1}]
+ts("Cảnh báo theo thời gian", [('sum by (alertname) (ALERTS{alertstate="firing"})', "{{alertname}}")], 6, w=9, h=8)
+ts("Đăng nhập thất bại / bị chặn (5 phút)", [('sum by (result) (increase(lms_logins_total{result=~"failed|blocked"}[5m]))', "{{result}}")], 15, w=9, h=8)
+y += 8
 
 # ---------------- Ứng dụng ----------------
 row("Ứng dụng LMS (Rate - Errors - Duration)")
@@ -129,7 +137,63 @@ dashboard = {
     "annotations": {"list": []},
 }
 
-out = pathlib.Path(__file__).parent / "dashboards" / "lms-overview.json"
-out.parent.mkdir(parents=True, exist_ok=True)
-out.write_text(json.dumps(dashboard, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-print(f"Đã ghi {out} ({len(panels)} panel)")
+def write(name, dash):
+    out = pathlib.Path(__file__).parent / "dashboards" / name
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(dash, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"Đã ghi {out} ({len(dash['panels'])} panel)")
+
+
+write("lms-overview.json", dashboard)
+
+# =================== Dashboard log (Loki) ===================
+LOKI = {"type": "loki", "uid": "loki"}
+
+
+def loki_ts(title, targets, x, w, h=8, unit="short", stacked=False):
+    return {
+        "type": "timeseries", "title": title, "datasource": LOKI,
+        "gridPos": {"h": h, "w": w, "x": x, "y": 0},
+        "targets": [{"refId": chr(65 + i), "expr": e, "legendFormat": lf, "datasource": LOKI, "queryType": "range"}
+                    for i, (e, lf) in enumerate(targets)],
+        "fieldConfig": {"defaults": {"unit": unit, "custom": {
+            "drawStyle": "bars", "fillOpacity": 60,
+            "stacking": {"mode": "normal" if stacked else "none"}}}, "overrides": []},
+        "options": {"legend": {"displayMode": "list", "placement": "bottom"}},
+    }
+
+
+def logs(title, expr, x, y, w, h):
+    return {
+        "type": "logs", "title": title, "datasource": LOKI,
+        "gridPos": {"h": h, "w": w, "x": x, "y": y},
+        "targets": [{"refId": "A", "expr": expr, "datasource": LOKI, "queryType": "range"}],
+        "options": {"showTime": True, "wrapLogMessage": True, "sortOrder": "Descending", "enableLogDetails": True},
+    }
+
+
+log_panels = [
+    loki_ts("Số dòng log ứng dụng theo level", [('sum by (level) (count_over_time({service="app"}[1m]))', "{{level}}")], 0, 8, stacked=True),
+    loki_ts("Request Nginx theo nhóm status", [('sum by (status_class) (count_over_time({service="nginx", stream="stdout"}[1m]))', "{{status_class}}")], 8, 8, stacked=True),
+    loki_ts("Đăng nhập thất bại", [('sum(count_over_time({service="app"} | json | event="login_failed" [1m]))', "login_failed")], 16, 8),
+    logs("Log ứng dụng LMS (app)", '{service="app"} | json | line_format "{{.event}} {{.msg}}"', 0, 8, 12, 12),
+    logs("Lỗi & cảnh báo toàn hệ thống", '{project="lms"} |~ "(?i)(error|warn|denied|fail)"', 12, 8, 12, 12),
+    logs("Nginx: request lỗi (status >= 400)", '{service="nginx", stream="stdout"} | json | status >= 400', 0, 20, 24, 10),
+    logs("Truy vết sự cố: đăng nhập thất bại, bị chặn và cảnh báo", '{service="app"} | json | event=~"login_failed|login_rate_limited|security_alert"', 0, 30, 24, 10),
+]
+for i, p in enumerate(log_panels, start=1):
+    p["id"] = i
+
+write("lms-logs.json", {
+    "uid": "lms-logs",
+    "title": "LMS - Log tập trung (Loki)",
+    "tags": ["lms", "loki", "de17"],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "refresh": "10s",
+    "time": {"from": "now-1h", "to": "now"},
+    "panels": log_panels,
+    "templating": {"list": []},
+    "annotations": {"list": []},
+})

@@ -1,0 +1,30 @@
+# Alertmanager: nhận cảnh báo từ Prometheus, gom nhóm, chống lặp và gửi đi.
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: lms-webhook
+  group_by: [alertname]
+  group_wait: 10s        # chờ 10s để gom các cảnh báo cùng loại
+  group_interval: 1m
+  repeat_interval: 1h    # nhắc lại sau 1 giờ nếu vẫn chưa xử lý
+
+receivers:
+  # Gửi tới ứng dụng LMS: cảnh báo hiện trên trang Quản trị và được ghi log
+  # (event="security_alert") để truy vết trên Loki.
+  - name: lms-webhook
+    webhook_configs:
+      - url: http://app:3000/internal/alerts
+        send_resolved: true
+
+  # Có thể gửi thêm qua Telegram (cần bot token và chat id):
+  #  - name: telegram
+  #    telegram_configs:
+  #      - bot_token: '<BOT_TOKEN>'
+  #        chat_id: <CHAT_ID>
+  #        parse_mode: HTML
+
+inhibit_rules:
+  # Khi một dịch vụ DOWN thì không bắn thêm cảnh báo hiệu năng cùng lúc
+  - source_matchers: [severity="critical", alertname="ServiceDown"]
+    target_matchers: [severity="warning"]

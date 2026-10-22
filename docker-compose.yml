@@ -115,6 +115,7 @@ services:
       phpmyadmin: { condition: service_started }
       grafana: { condition: service_started }
       prometheus: { condition: service_started }
+      alertmanager: { condition: service_started }
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider --no-check-certificate https://127.0.0.1:8443/healthz || exit 1"]
       interval: 15s
@@ -168,10 +169,29 @@ services:
     user: "472:0"                          # user grafana
     cap_drop: [ALL]
     networks: [frontend, monitoring]
-    depends_on: [prometheus]
+    depends_on: [prometheus, loki, alertmanager]
     deploy:
       resources:
         limits: { memory: 512m }
+
+  alertmanager:                            # nhận cảnh báo từ Prometheus và gửi đi
+    <<: *hardening
+    image: prom/alertmanager:v0.27.0
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --web.external-url=https://${DOMAIN:-localhost}/alertmanager/
+      - --web.route-prefix=/
+    volumes:
+      - ./monitoring/alertmanager:/etc/alertmanager:ro
+      - alertmanager_data:/alertmanager
+    user: "65534:65534"
+    read_only: true
+    cap_drop: [ALL]
+    networks: [frontend, monitoring]       # UI qua Nginx /alertmanager/ (Basic Auth)
+    deploy:
+      resources:
+        limits: { memory: 128m }
 
   # ---------- Exporter ----------
   node-exporter:                           # metrics máy chủ
@@ -233,6 +253,40 @@ services:
     networks: [monitoring]
     depends_on: [nginx]
 
+  # =============== LOG TẬP TRUNG: Loki + Promtail ===============
+  loki:
+    <<: *hardening
+    image: grafana/loki:3.3.2
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    user: "10001:10001"
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    networks: [monitoring]                 # không publish cổng, chỉ Grafana/Promtail gọi được
+    deploy:
+      resources:
+        limits: { memory: 512m }
+
+  promtail:
+    <<: *hardening
+    image: grafana/promtail:3.3.2
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # đọc log container qua Docker API
+      - promtail_data:/promtail
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    networks: [monitoring]
+    depends_on: [loki]
+    deploy:
+      resources:
+        limits: { memory: 256m }
+
 # ---------------- Cô lập mạng ----------------
 networks:
   frontend:            # Nginx <-> app, phpMyAdmin, Grafana, Prometheus
@@ -245,3 +299,6 @@ volumes:
   mysql_data:
   prometheus_data:
   grafana_data:
+  alertmanager_data:
+  loki_data:
+  promtail_data:

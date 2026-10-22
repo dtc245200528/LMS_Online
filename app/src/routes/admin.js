@@ -60,7 +60,8 @@ router.get('/', async (req, res, next) => {
          FROM enrollments e JOIN users u ON u.id = e.user_id JOIN courses c ON c.id = e.course_id
         ORDER BY e.enrolled_at DESC LIMIT 8`,
     );
-    res.render('admin/dashboard', { title: 'Quản trị', stats, recent });
+    const alerts = require('../alerts');
+    res.render('admin/dashboard', { title: 'Quản trị', stats, recent, firing: alerts.firing(), alertLog: alerts.recent(8) });
   } catch (err) { next(err); }
 });
 

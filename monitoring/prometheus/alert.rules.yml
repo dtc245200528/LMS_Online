@@ -52,8 +52,19 @@ groups:
 
   - name: lms-security
     rules:
+      # Sự cố ATTT: dò mật khẩu (brute-force) vào trang đăng nhập.
+      # Đếm cả lần sai mật khẩu (failed) và lần bị rate limit chặn (blocked).
       - alert: LoginBruteForce
-        expr: sum(increase(lms_logins_total{result="failed"}[5m])) > 20
-        labels: { severity: warning }
+        expr: sum(increase(lms_logins_total{result=~"failed|blocked"}[5m])) > 10
+        labels: { severity: critical, category: security }
         annotations:
-          summary: "Hơn 20 lần đăng nhập thất bại trong 5 phút (nghi brute-force)"
+          summary: "Nghi tấn công dò mật khẩu: {{ $value | printf \"%.0f\" }} lần đăng nhập thất bại/bị chặn trong 5 phút"
+          description: 'Truy vết trên Grafana Explore (Loki): {service="app"} | json | event=~"login_failed|login_rate_limited"'
+
+      # Nhiều request bị từ chối quyền truy cập (dò quét trang quản trị)
+      - alert: AdminAccessDenied
+        expr: sum(increase(http_requests_total{status="403"}[5m])) > 10
+        labels: { severity: warning, category: security }
+        annotations:
+          summary: "{{ $value | printf \"%.0f\" }} request bị từ chối (403) trong 5 phút"
+          description: 'Truy vết: {service="app"} | json | event=~"access_denied|csrf_rejected"'

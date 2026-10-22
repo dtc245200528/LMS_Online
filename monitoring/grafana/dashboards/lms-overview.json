@@ -398,7 +398,7 @@
     },
     {
       "type": "row",
-      "title": "Ứng dụng LMS (Rate - Errors - Duration)",
+      "title": "Cảnh báo & an ninh",
       "id": 8,
       "collapsed": false,
       "gridPos": {
@@ -410,9 +410,169 @@
       "panels": []
     },
     {
+      "type": "stat",
+      "title": "Cảnh báo đang kích hoạt",
+      "id": 9,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(ALERTS{alertstate=\"firing\"}) or vector(0)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Cảnh báo theo thời gian",
+      "id": 10,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 6,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (alertname) (ALERTS{alertstate=\"firing\"})",
+          "legendFormat": "{{alertname}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Đăng nhập thất bại / bị chặn (5 phút)",
+      "id": 11,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 15,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (result) (increase(lms_logins_total{result=~\"failed|blocked\"}[5m]))",
+          "legendFormat": "{{result}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Ứng dụng LMS (Rate - Errors - Duration)",
+      "id": 12,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "panels": []
+    },
+    {
       "type": "timeseries",
       "title": "Request/giây theo route",
-      "id": 9,
+      "id": 13,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -421,7 +581,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 15
       },
       "targets": [
         {
@@ -457,7 +617,7 @@
     {
       "type": "timeseries",
       "title": "Độ trễ p50 / p95",
-      "id": 10,
+      "id": 14,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -466,7 +626,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 15
       },
       "targets": [
         {
@@ -511,7 +671,7 @@
     {
       "type": "timeseries",
       "title": "Request theo mã trạng thái",
-      "id": 11,
+      "id": 15,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -520,7 +680,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 14
+        "y": 23
       },
       "targets": [
         {
@@ -556,7 +716,7 @@
     {
       "type": "timeseries",
       "title": "Đăng nhập (thành công / thất bại)",
-      "id": 12,
+      "id": 16,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -565,7 +725,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 14
+        "y": 23
       },
       "targets": [
         {
@@ -601,7 +761,7 @@
     {
       "type": "timeseries",
       "title": "Đăng ký học & hoàn thành bài",
-      "id": 13,
+      "id": 17,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -610,7 +770,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 14
+        "y": 23
       },
       "targets": [
         {
@@ -655,20 +815,20 @@
     {
       "type": "row",
       "title": "Web server Nginx",
-      "id": 14,
+      "id": 18,
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 31
       },
       "panels": []
     },
     {
       "type": "timeseries",
       "title": "Kết nối Nginx",
-      "id": 15,
+      "id": 19,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -677,7 +837,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 32
       },
       "targets": [
         {
@@ -740,7 +900,7 @@
     {
       "type": "timeseries",
       "title": "Request Nginx/giây",
-      "id": 16,
+      "id": 20,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -749,7 +909,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 32
       },
       "targets": [
         {
@@ -785,20 +945,20 @@
     {
       "type": "row",
       "title": "Cơ sở dữ liệu MySQL",
-      "id": 17,
+      "id": 21,
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 40
       },
       "panels": []
     },
     {
       "type": "timeseries",
       "title": "Kết nối MySQL",
-      "id": 18,
+      "id": 22,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -807,7 +967,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 32
+        "y": 41
       },
       "targets": [
         {
@@ -852,7 +1012,7 @@
     {
       "type": "timeseries",
       "title": "Truy vấn/giây (QPS)",
-      "id": 19,
+      "id": 23,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -861,7 +1021,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 32
+        "y": 41
       },
       "targets": [
         {
@@ -897,7 +1057,7 @@
     {
       "type": "timeseries",
       "title": "Lệnh theo loại",
-      "id": 20,
+      "id": 24,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -906,7 +1066,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 32
+        "y": 41
       },
       "targets": [
         {
@@ -942,20 +1102,20 @@
     {
       "type": "row",
       "title": "Container (cAdvisor)",
-      "id": 21,
+      "id": 25,
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 49
       },
       "panels": []
     },
     {
       "type": "timeseries",
       "title": "CPU theo container",
-      "id": 22,
+      "id": 26,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -964,7 +1124,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 41
+        "y": 50
       },
       "targets": [
         {
@@ -1000,7 +1160,7 @@
     {
       "type": "timeseries",
       "title": "RAM theo container",
-      "id": 23,
+      "id": 27,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1009,7 +1169,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 41
+        "y": 50
       },
       "targets": [
         {
@@ -1045,7 +1205,7 @@
     {
       "type": "timeseries",
       "title": "Mạng nhận theo container",
-      "id": 24,
+      "id": 28,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1054,7 +1214,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 41
+        "y": 50
       },
       "targets": [
         {
@@ -1090,20 +1250,20 @@
     {
       "type": "row",
       "title": "Máy chủ (node-exporter)",
-      "id": 25,
+      "id": 29,
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 58
       },
       "panels": []
     },
     {
       "type": "timeseries",
       "title": "CPU host",
-      "id": 26,
+      "id": 30,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1112,7 +1272,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 50
+        "y": 59
       },
       "targets": [
         {
@@ -1148,7 +1308,7 @@
     {
       "type": "timeseries",
       "title": "RAM host",
-      "id": 27,
+      "id": 31,
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1157,7 +1317,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 50
+        "y": 59
       },
       "targets": [
         {

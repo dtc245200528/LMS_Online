@@ -44,7 +44,7 @@ function createApp({ db, sessionStore } = {}) {
   app.use(pinoHttp({
     logger,
     customProps: (req) => ({ userId: req.session && req.session.user ? req.session.user.id : null }),
-    autoLogging: { ignore: (req) => ['/metrics', '/healthz', '/readyz'].includes(req.url) },
+    autoLogging: { ignore: (req) => ['/metrics', '/healthz', '/readyz', '/internal/alerts'].includes(req.url) },
     customLogLevel: (req, res, err) => {
       if (err || res.statusCode >= 500) return 'error';
       if (res.statusCode >= 400) return 'warn';
@@ -73,6 +73,9 @@ function createApp({ db, sessionStore } = {}) {
     res.set('Content-Type', metrics.register.contentType);
     res.end(await metrics.register.metrics());
   });
+
+  // Webhook nhận cảnh báo từ Alertmanager (chỉ trong mạng nội bộ)
+  app.use(require('./alerts').router);
 
   app.use(express.static(path.join(__dirname, '..', 'public'), { maxAge: '1h' }));
   app.use(express.urlencoded({ extended: false, limit: '200kb' }));

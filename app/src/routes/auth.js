@@ -15,6 +15,7 @@ const loginLimiter = rateLimit({
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   handler: (req, res) => {
+    metrics.logins.inc({ result: 'blocked' });
     req.log.warn({ event: 'login_rate_limited', ip: req.ip, email: req.body && req.body.email }, 'Đăng nhập quá nhiều lần');
     res.status(429).render('auth/login', { title: 'Đăng nhập', error: 'Bạn thử quá nhiều lần, vui lòng đợi 15 phút.', email: '', next: '' });
   },

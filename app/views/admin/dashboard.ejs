@@ -7,6 +7,13 @@
   <div class="stat"><b><%= stats.students %></b><span>Học viên</span></div>
   <div class="stat"><b><%= stats.enrollments %></b><span>Lượt đăng ký</span></div>
 </div>
+<% if (firing.length) { %>
+  <div class="alert alert-err">
+    <b>⚠ Cảnh báo an ninh đang kích hoạt</b>
+    <ul><% firing.forEach(function (a) { %><li><b><%= a.alertname %></b> (<%= a.severity %>) – <%= a.summary %> · từ <%= new Date(a.startsAt).toLocaleString('vi-VN') %></li><% }) %></ul>
+    <small>Truy vết: Grafana → Explore → Loki</small>
+  </div>
+<% } %>
 <% if (!stats.courses) { %>
   <div class="alert alert-warn">Hệ thống chưa có khóa học. <a href="/admin/courses/new">Thêm khóa học đầu tiên</a>.</div>
 <% } %>
@@ -19,6 +26,18 @@
       <tr><td><%= r.full_name %></td><td><%= r.email %></td><td><%= r.title %></td><td><%= new Date(r.enrolled_at).toLocaleString('vi-VN') %></td></tr>
     <% }) %>
     <% if (!recent.length) { %><tr><td colspan="4" class="muted">Chưa có lượt đăng ký.</td></tr><% } %>
+    </tbody>
+  </table>
+</section>
+<section class="card">
+  <h2>Nhật ký cảnh báo (Alertmanager)</h2>
+  <table class="table">
+    <thead><tr><th>Trạng thái</th><th>Cảnh báo</th><th>Mức độ</th><th>Nội dung</th><th>Nhận lúc</th></tr></thead>
+    <tbody>
+    <% alertLog.forEach(function (a) { %>
+      <tr><td class="<%= a.status === 'firing' ? 'danger-text' : 'ok-text' %>"><%= a.status === 'firing' ? 'FIRING' : 'RESOLVED' %></td><td><%= a.alertname %></td><td><%= a.severity %></td><td><%= a.summary %></td><td><%= new Date(a.receivedAt).toLocaleString('vi-VN') %></td></tr>
+    <% }) %>
+    <% if (!alertLog.length) { %><tr><td colspan="5" class="muted">Chưa có cảnh báo nào.</td></tr><% } %>
     </tbody>
   </table>
 </section>
