@@ -10,6 +10,7 @@ Website **EduLite LMS** quản lý khóa học, bài học, học viên và đă
 | Cơ sở dữ liệu | MySQL 8.4 |
 | Quản lý DB | phpMyAdmin 5.2 |
 | Reverse proxy | Nginx 1.27 (unprivileged) + HTTPS tự ký |
+| Giám sát | Prometheus 2.55 + Grafana 11.3, node-exporter, cAdvisor, mysqld-exporter, nginx-exporter |
 
 ## Chức năng
 
@@ -32,6 +33,10 @@ docker compose ps               # kiểm tra trạng thái (healthy)
 |---|---|---|
 | https://localhost/ | Website LMS | Admin: xem `ADMIN_EMAIL`/`ADMIN_PASSWORD` trong `.env` |
 | https://localhost/phpmyadmin/ | phpMyAdmin | Basic Auth (`BASIC_AUTH_*`) rồi MySQL `lms_dba` / `DBA_PASSWORD` |
+| https://localhost/grafana/ | Grafana – dashboard **LMS › LMS - Tổng quan hệ thống** | `admin` / `GRAFANA_ADMIN_PASSWORD` |
+| https://localhost/prometheus/ | Prometheus (Targets, Alerts) | Basic Auth (`BASIC_AUTH_*`) |
+
+> Đã chạy bản cũ trước khi có giám sát? Chạy lại `./scripts/setup.sh` (tự thêm biến mới vào `.env`) rồi `docker compose down -v && docker compose up -d --build` để MySQL tạo user `exporter`.
 
 Trình duyệt sẽ cảnh báo chứng chỉ tự ký → chọn *Advanced → Proceed to localhost*.
 
@@ -42,6 +47,9 @@ lms-devops/
 ├── app/                  # Mã nguồn ứng dụng Node.js + Dockerfile
 ├── db/init/              # Lược đồ, phân quyền MySQL
 ├── nginx/                # nginx.conf, virtual host, security headers
+├── monitoring/
+│   ├── prometheus/       # prometheus.yml, alert.rules.yml
+│   └── grafana/          # provisioning datasource + dashboard JSON
 ├── phpmyadmin/           # Cấu hình hardening phpMyAdmin
 ├── scripts/setup.sh      # Sinh bí mật, chứng chỉ
 └── docker-compose.yml

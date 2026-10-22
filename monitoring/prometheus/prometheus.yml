@@ -1,0 +1,44 @@
+# Prometheus: thu thập metrics của container, web server, database và ứng dụng
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    project: lms
+
+rule_files:
+  - /etc/prometheus/alert.rules.yml
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Ứng dụng LMS (prom-client): request, độ trễ, đăng nhập, đăng ký học...
+  - job_name: lms-app
+    static_configs:
+      - targets: ["app:3000"]
+        labels: { tier: app }
+
+  # Web server Nginx (qua stub_status)
+  - job_name: nginx
+    static_configs:
+      - targets: ["nginx-exporter:9113"]
+        labels: { tier: web }
+
+  # Database MySQL
+  - job_name: mysql
+    static_configs:
+      - targets: ["mysqld-exporter:9104"]
+        labels: { tier: db }
+
+  # Tất cả container (CPU, RAM, network) qua cAdvisor
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]
+        labels: { tier: container }
+
+  # Máy chủ (host)
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels: { tier: host }

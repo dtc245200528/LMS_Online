@@ -1,0 +1,59 @@
+groups:
+  - name: lms-availability
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "Target {{ $labels.job }} ({{ $labels.instance }}) không phản hồi"
+
+      - alert: MySQLDown
+        expr: mysql_up == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "MySQL không hoạt động"
+
+      - alert: NginxDown
+        expr: nginx_up == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "Nginx không hoạt động"
+
+  - name: lms-performance
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(http_requests_total[5m])), 0.001) > 0.05
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Tỉ lệ lỗi 5xx của ứng dụng > 5%"
+
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m]))) > 1
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Độ trễ p95 của ứng dụng > 1 giây"
+
+      - alert: ContainerHighMemory
+        expr: |
+          (container_memory_working_set_bytes{name=~"lms-.*"}
+            / container_spec_memory_limit_bytes{name=~"lms-.*"}) > 0.9
+          and container_spec_memory_limit_bytes{name=~"lms-.*"} > 0
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Container {{ $labels.name }} dùng > 90% giới hạn RAM"
+
+  - name: lms-security
+    rules:
+      - alert: LoginBruteForce
+        expr: sum(increase(lms_logins_total{result="failed"}[5m])) > 20
+        labels: { severity: warning }
+        annotations:
+          summary: "Hơn 20 lần đăng nhập thất bại trong 5 phút (nghi brute-force)"

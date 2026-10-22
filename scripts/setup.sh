@@ -41,6 +41,13 @@ EOF
   echo "[setup] Đã tạo .env (quyền 600)"
 fi
 
+# Bổ sung biến mới vào .env cũ (khi nâng cấp từ commit trước) mà không đổi mật khẩu đã có
+ensure_var() {
+  grep -q "^$1=" .env || { echo "$1=$2" >> .env; echo "[setup] Đã thêm $1 vào .env"; }
+}
+ensure_var MYSQLD_EXPORTER_PASSWORD "$(rand 24)"
+ensure_var GRAFANA_ADMIN_PASSWORD "Gf@$(rand 14)"
+
 # shellcheck disable=SC1091
 set -a; source .env; set +a
 
@@ -75,6 +82,9 @@ Website LMS        : https://${DOMAIN}/
 phpMyAdmin         : https://${DOMAIN}/phpmyadmin/
   Lớp 1 Basic Auth : ${BASIC_AUTH_USER} / ${BASIC_AUTH_PASSWORD}
   Lớp 2 MySQL      : lms_dba / (DBA_PASSWORD trong .env)
+Grafana            : https://${DOMAIN}/grafana/
+  Tài khoản        : admin / ${GRAFANA_ADMIN_PASSWORD}
+Prometheus         : https://${DOMAIN}/prometheus/  (Basic Auth như phpMyAdmin)
 =============================================================
 Tiếp theo: docker compose up -d --build
 EOF
