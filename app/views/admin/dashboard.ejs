@@ -1,0 +1,25 @@
+<%- include('../partials/header') %>
+<h1>Quản trị hệ thống</h1>
+<%- include('../partials/admin-nav', { active: 'dash' }) %>
+<div class="stats">
+  <div class="stat"><b><%= stats.courses %></b><span>Khóa học</span></div>
+  <div class="stat"><b><%= stats.lessons %></b><span>Bài học</span></div>
+  <div class="stat"><b><%= stats.students %></b><span>Học viên</span></div>
+  <div class="stat"><b><%= stats.enrollments %></b><span>Lượt đăng ký</span></div>
+</div>
+<% if (!stats.courses) { %>
+  <div class="alert alert-warn">Hệ thống chưa có khóa học. <a href="/admin/courses/new">Thêm khóa học đầu tiên</a>.</div>
+<% } %>
+<section class="card">
+  <h2>Đăng ký gần đây</h2>
+  <table class="table">
+    <thead><tr><th>Học viên</th><th>Email</th><th>Khóa học</th><th>Thời gian</th></tr></thead>
+    <tbody>
+    <% recent.forEach(function (r) { %>
+      <tr><td><%= r.full_name %></td><td><%= r.email %></td><td><%= r.title %></td><td><%= new Date(r.enrolled_at).toLocaleString('vi-VN') %></td></tr>
+    <% }) %>
+    <% if (!recent.length) { %><tr><td colspan="4" class="muted">Chưa có lượt đăng ký.</td></tr><% } %>
+    </tbody>
+  </table>
+</section>
+<%- include('../partials/footer') %>

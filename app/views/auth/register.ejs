@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<section class="auth card">
+  <h1>Đăng ký học viên</h1>
+  <% if (errors.length) { %>
+    <div class="alert alert-err"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div>
+  <% } %>
+  <form method="post" action="/register" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Họ và tên<input name="full_name" value="<%= form.full_name || '' %>" required maxlength="100"></label>
+    <label>Email<input type="email" name="email" value="<%= form.email || '' %>" required maxlength="150" autocomplete="username"></label>
+    <label>Mật khẩu <span class="muted">(≥ 8 ký tự, có chữ và số)</span><input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+    <label>Nhập lại mật khẩu<input type="password" name="confirm" required minlength="8" autocomplete="new-password"></label>
+    <button class="btn" type="submit">Tạo tài khoản</button>
+  </form>
+  <p class="muted">Đã có tài khoản? <a href="/login">Đăng nhập</a></p>
+</section>
+<%- include('../partials/footer') %>

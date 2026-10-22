@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<section class="hero">
+  <div>
+    <h1>Học mọi lúc, mọi nơi</h1>
+    <p>Các khóa học ngắn gọn, có lộ trình bài học rõ ràng và theo dõi tiến độ.</p>
+  </div>
+  <form class="search" method="get" action="/">
+    <input name="q" value="<%= q %>" placeholder="Tìm khóa học..." maxlength="100">
+    <button class="btn" type="submit">Tìm</button>
+  </form>
+</section>
+
+<% if (!courses.length) { %>
+  <p class="empty"><%= q ? 'Không tìm thấy khóa học phù hợp.' : 'Chưa có khóa học nào. Quản trị viên hãy thêm khóa học trong trang Quản trị.' %></p>
+<% } else { %>
+<div class="grid">
+  <% courses.forEach(function (c) { %>
+  <a class="course-card" href="/courses/<%= c.id %>">
+    <span class="tag"><%= c.level %></span>
+    <h3><%= c.title %></h3>
+    <p class="desc"><%= (c.description || '').slice(0, 140) %><%= (c.description || '').length > 140 ? '…' : '' %></p>
+    <div class="meta">
+      <span><%= c.instructor %></span>
+      <span><%= c.lesson_count %> bài · <%= c.student_count %> học viên</span>
+    </div>
+  </a>
+  <% }) %>
+</div>
+<% } %>
+<%- include('../partials/footer') %>

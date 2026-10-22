@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<h1>Danh sách đăng ký học</h1>
+<%- include('../partials/admin-nav', { active: 'enroll' }) %>
+<table class="table card">
+  <thead><tr><th>Học viên</th><th>Email</th><th>Khóa học</th><th>Tiến độ</th><th>Ngày đăng ký</th><th></th></tr></thead>
+  <tbody>
+  <% enrollments.forEach(function (e) { %>
+    <tr>
+      <td><%= e.full_name %></td>
+      <td><%= e.email %></td>
+      <td><a href="/courses/<%= e.course_id %>"><%= e.title %></a></td>
+      <td><%= e.done %>/<%= e.total %></td>
+      <td><%= new Date(e.enrolled_at).toLocaleString('vi-VN') %></td>
+      <td class="actions">
+        <form method="post" action="/admin/enrollments/<%= e.id %>/delete" class="inline" data-confirm="Hủy lượt đăng ký này?">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="link-btn danger" type="submit">Hủy</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+  <% if (!enrollments.length) { %><tr><td colspan="6" class="muted">Chưa có lượt đăng ký.</td></tr><% } %>
+  </tbody>
+</table>
+<script src="/js/app.js"></script>
+<%- include('../partials/footer') %>

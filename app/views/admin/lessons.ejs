@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<div class="row between"><h1>Bài học: <%= course.title %></h1><a class="btn" href="/admin/courses/<%= course.id %>/lessons/new">+ Thêm bài học</a></div>
+<%- include('../partials/admin-nav', { active: 'courses' }) %>
+<table class="table card">
+  <thead><tr><th>Thứ tự</th><th>Tên bài học</th><th>Thời lượng</th><th></th></tr></thead>
+  <tbody>
+  <% lessons.forEach(function (l) { %>
+    <tr>
+      <td><%= l.position %></td>
+      <td><a href="/courses/<%= course.id %>/lessons/<%= l.id %>"><%= l.title %></a></td>
+      <td><%= l.duration_minutes %> phút</td>
+      <td class="actions">
+        <a href="/admin/courses/<%= course.id %>/lessons/<%= l.id %>/edit">Sửa</a>
+        <form method="post" action="/admin/courses/<%= course.id %>/lessons/<%= l.id %>/delete" class="inline" data-confirm="Xóa bài học này?">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="link-btn danger" type="submit">Xóa</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+  <% if (!lessons.length) { %><tr><td colspan="4" class="muted">Chưa có bài học.</td></tr><% } %>
+  </tbody>
+</table>
+<p><a href="/admin/courses">← Danh sách khóa học</a></p>
+<script src="/js/app.js"></script>
+<%- include('../partials/footer') %>

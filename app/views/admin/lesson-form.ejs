@@ -1,0 +1,20 @@
+<%- include('../partials/header') %>
+<h1><%= title %> · <%= course.title %></h1>
+<%- include('../partials/admin-nav', { active: 'courses' }) %>
+<section class="card">
+  <% if (errors.length) { %>
+    <div class="alert alert-err"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div>
+  <% } %>
+  <form method="post" action="<%= action %>" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Tên bài học<input name="title" value="<%= form.title || '' %>" required maxlength="200"></label>
+    <div class="row">
+      <label>Thứ tự<input type="number" name="position" min="1" max="1000" value="<%= form.position || 1 %>"></label>
+      <label>Thời lượng (phút)<input type="number" name="duration_minutes" min="0" max="600" value="<%= form.duration_minutes || 0 %>"></label>
+    </div>
+    <label>Link video YouTube (tùy chọn)<input type="url" name="video_url" value="<%= form.video_url || '' %>" placeholder="https://www.youtube.com/watch?v=..."></label>
+    <label>Nội dung<textarea name="content" rows="10"><%= form.content || '' %></textarea></label>
+    <div class="row"><button class="btn" type="submit">Lưu</button><a class="btn btn-ghost" href="/admin/courses/<%= course.id %>/lessons">Hủy</a></div>
+  </form>
+</section>
+<%- include('../partials/footer') %>

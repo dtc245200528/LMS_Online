@@ -1,0 +1,22 @@
+<%- include('../partials/header') %>
+<h1><%= title %></h1>
+<%- include('../partials/admin-nav', { active: 'courses' }) %>
+<section class="card">
+  <% if (errors.length) { %>
+    <div class="alert alert-err"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div>
+  <% } %>
+  <form method="post" action="<%= action %>" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Tên khóa học<input name="title" value="<%= form.title || '' %>" required maxlength="200"></label>
+    <label>Giảng viên<input name="instructor" value="<%= form.instructor || '' %>" required maxlength="100"></label>
+    <label>Cấp độ
+      <select name="level">
+        <% levels.forEach(function (lv) { %><option <%= form.level === lv ? 'selected' : '' %>><%= lv %></option><% }) %>
+      </select>
+    </label>
+    <label>Mô tả<textarea name="description" rows="5" maxlength="5000"><%= form.description || '' %></textarea></label>
+    <label class="check"><input type="checkbox" name="is_published" value="1" <%= form.is_published ? 'checked' : '' %>> Xuất bản (học viên nhìn thấy)</label>
+    <div class="row"><button class="btn" type="submit">Lưu</button><a class="btn btn-ghost" href="/admin/courses">Hủy</a></div>
+  </form>
+</section>
+<%- include('../partials/footer') %>

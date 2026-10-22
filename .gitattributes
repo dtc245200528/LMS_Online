@@ -1,0 +1,5 @@
+# Giữ LF cho script và cấu hình để chạy đúng trong container Linux / WSL
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.docx binary

@@ -1,0 +1,31 @@
+<%- include('../partials/header') %>
+<p class="crumb"><a href="/courses/<%= course.id %>"><%= course.title %></a> › Bài <%= position %>/<%= total %></p>
+<article class="card lesson">
+  <h1><%= lesson.title %></h1>
+  <p class="muted"><%= lesson.duration_minutes %> phút</p>
+  <% if (video) { %>
+    <div class="video"><iframe src="<%= video %>" title="<%= lesson.title %>" allowfullscreen loading="lazy"></iframe></div>
+  <% } %>
+  <div class="content">
+    <% (lesson.content || '').split('\n').forEach(function (p) { if (p.trim()) { %><p><%= p %></p><% } }) %>
+  </div>
+  <div class="row between">
+    <div>
+      <% if (prev) { %><a class="btn btn-ghost" href="/courses/<%= course.id %>/lessons/<%= prev.id %>">← Bài trước</a><% } %>
+    </div>
+    <% if (currentUser.role === 'student') { %>
+      <% if (isDone) { %>
+        <span class="badge-ok">Đã hoàn thành ✓</span>
+      <% } else { %>
+        <form method="post" action="/courses/<%= course.id %>/lessons/<%= lesson.id %>/complete" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn" type="submit">Đánh dấu hoàn thành</button>
+        </form>
+      <% } %>
+    <% } %>
+    <div>
+      <% if (next) { %><a class="btn btn-ghost" href="/courses/<%= course.id %>/lessons/<%= next.id %>">Bài tiếp →</a><% } %>
+    </div>
+  </div>
+</article>
+<%- include('../partials/footer') %>

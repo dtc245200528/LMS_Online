@@ -1,0 +1,46 @@
+<%- include('../partials/header') %>
+<section class="course-head card">
+  <span class="tag"><%= course.level %></span>
+  <% if (!course.is_published) { %><span class="tag tag-warn">Bản nháp</span><% } %>
+  <h1><%= course.title %></h1>
+  <p class="muted">Giảng viên: <%= course.instructor %> · <%= lessons.length %> bài học · <%= studentCount %> học viên</p>
+  <% (course.description || '').split('\n').forEach(function (p) { if (p.trim()) { %><p><%= p %></p><% } }) %>
+
+  <% if (!currentUser) { %>
+    <a class="btn" href="/login?next=/courses/<%= course.id %>">Đăng nhập để đăng ký</a>
+  <% } else if (currentUser.role === 'student') { %>
+    <% if (enrolled) { %>
+      <div class="row">
+        <span class="badge-ok">Đã đăng ký · hoàn thành <%= completed.size %>/<%= lessons.length %></span>
+        <form method="post" action="/courses/<%= course.id %>/unenroll" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn-ghost" type="submit">Hủy đăng ký</button>
+        </form>
+      </div>
+    <% } else { %>
+      <form method="post" action="/courses/<%= course.id %>/enroll">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn" type="submit">Đăng ký khóa học</button>
+      </form>
+    <% } %>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Nội dung khóa học</h2>
+  <% if (!lessons.length) { %><p class="muted">Khóa học chưa có bài học.</p><% } %>
+  <ol class="lesson-list">
+    <% lessons.forEach(function (l) { %>
+    <li>
+      <% if (canView) { %>
+        <a href="/courses/<%= course.id %>/lessons/<%= l.id %>"><%= l.title %></a>
+      <% } else { %>
+        <span><%= l.title %></span>
+      <% } %>
+      <span class="muted"><%= l.duration_minutes %> phút</span>
+      <% if (completed.has(l.id)) { %><span class="done">✓</span><% } %>
+    </li>
+    <% }) %>
+  </ol>
+</section>
+<%- include('../partials/footer') %>

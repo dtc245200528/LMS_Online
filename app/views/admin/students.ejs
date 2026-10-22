@@ -1,0 +1,31 @@
+<%- include('../partials/header') %>
+<h1>Quản lý học viên</h1>
+<%- include('../partials/admin-nav', { active: 'students' }) %>
+<table class="table card">
+  <thead><tr><th>#</th><th>Họ tên</th><th>Email</th><th>Số khóa</th><th>Ngày tạo</th><th>Trạng thái</th><th></th></tr></thead>
+  <tbody>
+  <% students.forEach(function (s) { %>
+    <tr>
+      <td><%= s.id %></td>
+      <td><%= s.full_name %></td>
+      <td><%= s.email %></td>
+      <td><%= s.course_count %></td>
+      <td><%= new Date(s.created_at).toLocaleDateString('vi-VN') %></td>
+      <td><%= s.is_active ? 'Hoạt động' : 'Đã khóa' %></td>
+      <td class="actions">
+        <form method="post" action="/admin/students/<%= s.id %>/toggle" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="link-btn" type="submit"><%= s.is_active ? 'Khóa' : 'Mở khóa' %></button>
+        </form>
+        <form method="post" action="/admin/students/<%= s.id %>/delete" class="inline" data-confirm="Xóa học viên này và toàn bộ dữ liệu học tập?">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="link-btn danger" type="submit">Xóa</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+  <% if (!students.length) { %><tr><td colspan="7" class="muted">Chưa có học viên.</td></tr><% } %>
+  </tbody>
+</table>
+<script src="/js/app.js"></script>
+<%- include('../partials/footer') %>

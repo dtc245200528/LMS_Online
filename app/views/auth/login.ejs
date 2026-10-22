@@ -1,0 +1,14 @@
+<%- include('../partials/header') %>
+<section class="auth card">
+  <h1>Đăng nhập</h1>
+  <% if (error) { %><div class="alert alert-err"><%= error %></div><% } %>
+  <form method="post" action="/login" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="next" value="<%= next %>">
+    <label>Email<input type="email" name="email" value="<%= email %>" required autocomplete="username"></label>
+    <label>Mật khẩu<input type="password" name="password" required autocomplete="current-password"></label>
+    <button class="btn" type="submit">Đăng nhập</button>
+  </form>
+  <p class="muted">Chưa có tài khoản? <a href="/register">Đăng ký học viên</a></p>
+</section>
+<%- include('../partials/footer') %>

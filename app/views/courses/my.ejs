@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<h1>Khóa học của tôi</h1>
+<% if (!courses.length) { %>
+  <p class="empty">Bạn chưa đăng ký khóa học nào. <a href="/">Xem danh sách khóa học</a></p>
+<% } else { %>
+<div class="grid">
+  <% courses.forEach(function (c) { var pct = c.total ? Math.round(c.done * 100 / c.total) : 0; %>
+  <a class="course-card" href="/courses/<%= c.id %>">
+    <h3><%= c.title %></h3>
+    <p class="muted"><%= c.instructor %></p>
+    <progress max="100" value="<%= pct %>"></progress>
+    <div class="meta"><span>Hoàn thành <%= c.done %>/<%= c.total %> bài</span><span><%= pct %>%</span></div>
+  </a>
+  <% }) %>
+</div>
+<% } %>
+<%- include('../partials/footer') %>
